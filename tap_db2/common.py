@@ -66,10 +66,8 @@ def connection(config):
     # Docs on keywords this driver accepts:{
     # https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_71/rzaik/rzaikconnstrkeywordsgeneralprop.htm
     
-    ibm_conn = ibm_db.connect("DATABASE={database};HOSTNAME={host};PORT={port};PROTOCOL=TCPIP;UID={uid};PWD={pwd};".format(
-database=config['database'],host=config['host'],port=config['port'],uid=config['uid'],pwd=config['pwd']), "", "")
-    return ibm_db_dbi.connect('tmw','adam.kickham','HW20kp10','10.10.87.168','FLUKEDB',conn_options={'SchemaList':['TMWIN']})
-    
+    return ibm_db_dbi.connect(config['dsn'],config['uid'],config['pwd'],config['host'],config['database'])
+    ibm_db_dbi.connect()
 
 class get_cursor(object):
     def __init__(self, config):

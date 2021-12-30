@@ -11,9 +11,9 @@ RUN mkdir -p /opt/code/tap-db2
 COPY ./setup.py /opt/code/tap-db2/setup.py
 COPY ./tap_db2 /opt/code/tap-db2/tap_db2
 RUN pip install ibm_db
-COPY ./config/db2dsdriver.cfg /usr/local/lib/python3.8/site-packages/clidriver/cfg/db2dsdriver.cfg
 RUN pip install /opt/code/tap-db2
 
+COPY ./config/db2dsdriver.cfg /usr/local/lib/python3.8/site-packages/clidriver/cfg/db2dsdriver.cfg
 WORKDIR /opt/code/tap-db2
 ENTRYPOINT ["python", "-m", "tap_db2"]
 CMD []
