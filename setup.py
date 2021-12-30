@@ -9,8 +9,8 @@ setup(
     url="http://singer.io",
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     install_requires=[
-        "singer-python==5.0.4",
-        "pyodbc>4,<5",
+        "singer-python==5.12.2",
+        "ibm_db","pendulum"
     ],
     entry_points="""
     [console_scripts]

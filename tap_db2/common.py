@@ -2,7 +2,8 @@ import os
 import re
 import shutil
 import configparser
-import pyodbc
+import ibm_db
+import ibm_db_dbi
 import backoff
 
 # pylint: disable=no-member
@@ -36,16 +37,17 @@ def _write_userprefs(host, port):
 def _write_port_to_services(port):
     """Modifies the /etc/services file to specify a port for connecting to
     DB2."""
-    with open("/etc/services", "r+") as f:
-        lines = f.readlines()
-        f.seek(0)
-        for line in lines:
-            # as-database was found in
-            # https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_71/rzaii/rzaiiservicesandports.htm
-            if not re.match(r"^as-database\s+", line):
-                f.write(line)
-        f.truncate()
-        f.write("as-database {}/tcp # tap-db2\n".format(port))
+    pass
+    # with open("/etc/services", "r+") as f:
+    #     lines = f.readlines()
+    #     f.seek(0)
+    #     for line in lines:
+    #         # as-database was found in
+    #         # https://www.ibm.com/support/knowledgecenter/en/ssw_ibm_i_71/rzaii/rzaiiservicesandports.htm
+    #         if not re.match(r"^as-database\s+", line):
+    #             f.write(line)
+    #     f.truncate()
+    #     f.write("as-database {}/tcp # tap-db2\n".format(port))
 
 
 def setup_port_configuration(config):
@@ -57,18 +59,17 @@ def setup_port_configuration(config):
 
 
 @backoff.on_exception(backoff.expo,
-                      (pyodbc.OperationalError),
+                      (None),
                       max_tries=5,
                       factor=2)
 def connection(config):
-    # Docs on keywords this driver accepts:
+    # Docs on keywords this driver accepts:{
     # https://www.ibm.com/support/knowledgecenter/ssw_ibm_i_71/rzaik/rzaikconnstrkeywordsgeneralprop.htm
-    return pyodbc.connect(
-        driver="{IBM i Access ODBC Driver 64-bit}",
-        system=config["host"],
-        uid=config["user"],
-        pwd=config["password"])
-
+    
+    ibm_conn = ibm_db.connect("DATABASE={database};HOSTNAME={host};PORT={port};PROTOCOL=TCPIP;UID={uid};PWD={pwd};".format(
+database=config['database'],host=config['host'],port=config['port'],uid=config['uid'],pwd=config['pwd']), "", "")
+    return ibm_db_dbi.connect('tmw','adam.kickham','HW20kp10','10.10.87.168','FLUKEDB',conn_options={'SchemaList':['TMWIN']})
+    
 
 class get_cursor(object):
     def __init__(self, config):

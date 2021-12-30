@@ -21,11 +21,11 @@ Column = namedtuple("Column", [
     "character_maximum_length",
     "numeric_precision",
     "numeric_scale",
-    "ccsid",
+    # "ccsid",
 ])
 
-SUPPORTED_TYPES = {"T", "V", "P"}
-
+# SUPPORTED_TYPES = {"T", "V", "P"}
+SUPPORTED_TYPES = {'BASE TABLE','VIEW'}
 
 def _question_marks(lst):
     return ",".join("?" * len(lst))
@@ -41,7 +41,7 @@ def _query_tables(config):
         SELECT table_schema,
                table_name,
                table_type
-          FROM qsys2.systables
+          FROM sysibm.tables
          WHERE table_type IN ({})
     """.format(_question_marks(SUPPORTED_TYPES))
     bindings = list(SUPPORTED_TYPES)
@@ -70,9 +70,8 @@ def _query_columns(config):
                    data_type,
                    character_maximum_length,
                    numeric_precision,
-                   numeric_scale,
-                   ccsid
-              FROM qsys2.syscolumns
+                   numeric_scale
+              FROM sysibm.columns
              WHERE table_schema IN ({})
             """.format(_question_marks(binds))
             LOGGER.info("sql: %s, binds: %s", sql, binds)
@@ -86,7 +85,7 @@ def _query_columns(config):
                    character_maximum_length,
                    numeric_precision,
                    numeric_scale
-              FROM qsys2.syscolumns
+              FROM sysibm.columns
             """)
         yield from cursor
 
@@ -95,15 +94,11 @@ def _query_primary_keys(config):
     the raw results."""
     with get_cursor(config) as cursor:
         cursor.execute("""
-            SELECT A.table_schema,
-                   A.table_name,
-                   A.column_name,
-                   A.ordinal_position
-              FROM qsys2.syskeycst A
-              JOIN qsys2.syscst B
-                ON A.constraint_schema = B.constraint_schema
-               AND A.constraint_name = B.constraint_name
-             WHERE B.constraint_type = 'PRIMARY KEY'
+            SELECT table_schem as table_schema,
+                   table_name,
+                   column_name,
+                   key_seq as ordinal_position
+              FROM sysibm.sqlprimarykeys A
         """)
         yield from cursor
 
@@ -114,7 +109,7 @@ def _table_id(table):
 
 
 def _find_tables(config):
-    # We use the qsys2.systables catalog rather than
+    # We use the sysibm.tables catalog rather than
     # information_schema.tables because it contains better information
     # about the "table_type." The information_schema table doesn't
     # distinguish between tables and data files.

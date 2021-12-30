@@ -105,3 +105,4 @@ state.json
 /private*
 /bin
 /ibm
+discover.json
